@@ -18,17 +18,28 @@ class SocketClient(object):
     def send_to_client(self, message):
         self.socket.sendall(bytearray(message, "latin1"))
 
-    def check_for_messages(self, client) -> Event:
+    def check_for_messages(self, client) -> Optional[Event]:
         rlist, wlist, xlist = select.select([self.socket], [], [], 0)
         if self.socket not in rlist:
             return
+
         data = self.socket.recv(4096).decode("latin1")
         message = telnet_handler.process(data)
 
         if message:
-            message = message.strip()
-            # separate the message into the command (the first word)
-            # and its parameters (the rest of the message)
-            command, params = (message.split(" ", 1) + ["", ""])[:2]
-            return Event(ServerEvents.COMMAND, client, command.lower(), params)
+            self.buffer += message
+            if self.__is_full_cmd():
+                message = self.buffer.strip()
+                # separate the message into the command (the first word)
+                # and its parameters (the rest of the message)
+                command, params = (message.split(" ", 1) + ["", ""])[:2]
+                self.buffer = ""
+                return Event(ServerEvents.COMMAND, client, command.lower(), params)
+            else:
+                return
+        elif len(data) > 0:
+            self.buffer += data
+
+    def __is_full_cmd(self):
+        return self.buffer.endswith("\n")
 
