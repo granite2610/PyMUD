@@ -170,7 +170,6 @@ class MudServer(object):
             cl.socket.lastcheck = time.time()
 
     def _check_for_messages(self):
-
         # go through all the clients
         for uid, client in self._clients.items():
             try:

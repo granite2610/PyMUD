@@ -2,6 +2,7 @@ import uuid
 
 from typing import List, Dict
 
+from lib.models.creature import Creature
 from lib.models.enums import ExitType, LightLevel, Obscuration
 
 
@@ -52,8 +53,12 @@ class Room(Entity):
         self.obscuration = obscuration
         self.exits = exits
         self.inventory = Inventory()
+        self.npcs = []
 
         super().__init__(name, description)
+
+    def add_npc(self, npc: Creature):
+        self.npcs.append(npc)
 
     def add_exit(self, ex:Exit):
         self.exits.add(ex)
