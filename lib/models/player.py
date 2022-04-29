@@ -2,18 +2,20 @@ from abc import ABC
 
 from game_data import rooms
 from lib.models.client import Client
-from lib.models.creature import Creature
+from lib.models.character import Character
+from lib.models.client import Client
+from lib.models.npc import NPC
 from mudserver import MudServer
 
 
-class Player(Creature, ABC):
+class Player(Character, ABC):
 
-    def __init__(self, client: Client, server: MudServer, creature: Creature = None):
-        self.client = client
+    def __init__(self, client: Client, server: MudServer, creature: NPC = None):
         self.server = server
 
         if creature:
             super().__init__(
+                 client,
                  creature.name,
                  creature.description,
                  creature.character_class,
@@ -31,13 +33,21 @@ class Player(Creature, ABC):
                  creature.inventory
             )
 
-        super().__init__()
-
+        super().__init__(client)
 
     def message(self, message):
         self.server.send_message(self.client.uuid, message)
+
+    def say(self, msg: str):
+        self.server.send_message(self.client.uuid, msg)
+
+    def tell(self, msg: str):
+        self.server.send_message(self.client.uuid, msg)
 
     def move(self, destination):
         super().move(destination)
         self.message(f"You arrive at '{self._location}'")
         self.message(rooms[self._location].description)
+
+    def attack(self, character: Character):
+        character.take_damage(10)

@@ -173,7 +173,7 @@ class MudServer(object):
         # go through all the clients
         for uid, client in self._clients.items():
             try:
-                message = client.socket.check_for_messages(client)
+                message = client.check_for_messages()
                 if message:
                     self._new_events.append(message)
             # if there is a problem reading from the socket (e.g. the client

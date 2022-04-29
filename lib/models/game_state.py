@@ -1,5 +1,8 @@
 from typing import Dict
 
+from game_data import rooms
+from lib.models.character import Character
+from lib.models.npc import NPC
 from mudserver import MudServer
 from lib.models.player import Player
 
@@ -10,7 +13,7 @@ from lib.models.player import Player
 class GameState(object):
     def __init__(self, server: MudServer):
         self.server = server
-        self.players: Dict[str, Player] = {}
+        self.players: Dict[str, Character] = {}
 
     def update(self):
         self.server.update()
@@ -18,7 +21,7 @@ class GameState(object):
     def add_player(self, player: Player):
         self.players[player.uuid] = player
 
-    def remove_player(self, player: Player):
+    def remove_player(self, player: Character):
         del(self.players[player.uuid])
 
     def list_players(self):
@@ -49,14 +52,35 @@ class GameState(object):
 
             self.remove_player(disconnected_player)
 
-    def tell_player(self, player: Player, message: str):
+    def tell_player(self, player: Character, message: str):
         self.server.send_message(player.client.uuid, message)
+
+    def attack_character(self, attacker: Character, defender_name: str):
+        if self.find_character_by_name(defender_name):
+            defender = self.find_character_by_name(defender_name)
+            if defender and attacker.get_location() == defender.get_location():
+                defender.take_damage(10)
+                self.tell_player(attacker, f"You attacked {defender.name}")
+
+    def find_character_by_name(self, char_name: str) -> Character:
+        for uuid, character in self.players.items():
+            if character.name == char_name:
+                return character
+
+    def find_npcs_in_room(self, room_id) -> [NPC]:
+        room = rooms.get(room_id)
+        if room:
+            return room.npcs
+        return []
+
+    def move_character(self):
+        pass
 
     def broadcast(self, message: str):
         for player in self.players.values():
             self.tell_player(player, message)
 
-    def find_player_by_client_id(self, client_id: str) -> Player:
+    def find_player_by_client_id(self, client_id: str) -> Character:
         for player_id, player in self.players.items():
             if player.client.uuid == client_id:
                 return player

@@ -10,7 +10,7 @@ def normal_read_state(message, state, buffer, character):
     # if we get a newline character, this is the end of the
     # message. Set 'message' to the contents of the buffer
     elif character == "\n":
-        message = ''.join(buffer)
+        message = ''.join(buffer).join("\n")
 
     # some telnet clients send the characters as soon as the user
     # types them. So if we get a backspace character, this is where

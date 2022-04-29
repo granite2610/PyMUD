@@ -1,4 +1,5 @@
 from game_data import rooms
+from lib.models.character import Character
 from lib.models.game_state import GameState
 
 from lib.models.player import Player
@@ -19,6 +20,8 @@ class Commands(object):
             "look": self.look,
             "go": self.go,
             "tell": self.tell,
+            "attack": self.attack,
+            "inv": self.show_inventory
         }
 
     def execute_command(self, player, command, param):
@@ -26,6 +29,11 @@ class Commands(object):
             self.commands[command](player, param)
         else:
             player.message("Unknown command '{}'".format(command))
+
+    def attack(self, player: Player, params):
+        if params and len(params) > 0:
+            target_name = params
+            self.game_state.attack_character(player, target_name)
 
     def quit(self, player: Player, params=None):
         """  quit           - Disconnects from the server"""
@@ -70,9 +78,11 @@ class Commands(object):
         player.message(current_location.description)
 
         players_here = self._get_players_with(player)
+        npcs_here = self.game_state.find_npcs_in_room(player.get_location())
 
         # send player a message containing the list of players in the room
         player.message("Players here: {}".format(", ".join([player.name for player in players_here])))
+        player.message("NPCs here: {}".format(", ".join([npc.name for npc in npcs_here])))
         # send player a message containing the list of exits from this room
         player.message("Exits are: {}".format(", ".join([ex.name for ex in current_location.exits])))
 
@@ -100,6 +110,13 @@ class Commands(object):
         else:
             # send back an 'unknown exit' message
             player.message(f"Unknown exit '{ex}'")
+
+    def show_inventory(self, player: Player, params):
+        raw_inv = player.inventory.get_items()
+        if not raw_inv:
+            raw_inv = dict()
+        inv = [item.name for item_id, item in raw_inv]
+        player.message("Inventory: {}".format(", ").join(inv))
 
     def _get_players_with(self, player: Player):
         players = []

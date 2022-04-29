@@ -40,6 +40,6 @@ class SocketClient(object):
         elif len(data) > 0:
             self.buffer += data
 
-    def __is_full_cmd(self):
+    def __is_full_cmd(self) -> bool:
         return self.buffer.endswith("\n")
 

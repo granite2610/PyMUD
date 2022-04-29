@@ -1,14 +1,15 @@
 from dataclasses import dataclass, field
 from typing import List, Dict
 
-from game_data import rooms
 from lib.constants import DEFAULT_START_LOCATION
+from lib.models.client import NpcClient
+from lib.models.character import Character
 from lib.models.character_class import CharacterClass
 from lib.models.entity import Entity, Inventory
 from lib.models.enums import Ability, Skill, Alignment
 
 
-class Creature(Entity):
+class NPC(Character):
 
     _DEFAULT_LEVEL = 0
     _DEFAULT_XP = 0
@@ -16,7 +17,8 @@ class Creature(Entity):
     _DEFAULT_AC = 10
 
     def __init__(self,
-                 name: str = None,
+                 client: NpcClient,
+                 name: str ,
                  description: str = None,
                  character_class: CharacterClass = None,
                  level: int = _DEFAULT_LEVEL,
@@ -32,6 +34,7 @@ class Creature(Entity):
                  hd_total: int = 0,
                  inventory: Inventory = None):
 
+        self.name = name
         self.character_class = character_class
         self.level = level
         self.background = background
@@ -51,49 +54,10 @@ class Creature(Entity):
         self.inventory: Inventory = inventory
         self._location = ""
 
-        super().__init__()
-
-    def get_modifier(self, ability: Ability) -> int:
-        value = self.abilities.get(ability)
-        return (value - 10) // 2
-
-    def get_strength_modifier(self) -> int:
-        return self.get_modifier(Ability.STRENGTH)
-
-    def get_dexterity_modifier(self) -> int:
-        return self.get_modifier(Ability.DEXTERITY)
-
-    def get_constitution_modifier(self) -> int:
-        return self.get_modifier(Ability.CONSTITUTION)
-
-    def get_wisdom_modifier(self) -> int:
-        return self.get_modifier(Ability.WISDOM)
-
-    def get_intelligence_modifier(self) -> int:
-        return self.get_modifier(Ability.INTELLIGENCE)
-
-    def get_charisma_modifier(self) -> int:
-        return self.get_modifier(Ability.CHARISMA)
-
-    def get_initiative(self) -> int:
-        raise NotImplementedError
-
-    def get_passive_perception(self) -> int:
-        raise NotImplementedError
-
-    def take_damage(self, damage: int) -> int:
-        self.current_hp -= damage
-        return self.current_hp
-
-    def heal(self, amount: int) -> int:
-        self.current_hp += amount
-        return self.current_hp
+        super().__init__(client, name, description)
 
     def move(self, destination: str):
-        self._location = destination
-        rooms[self._location].inventory.add_item(self)
+        pass
+        # self._location = destination
+        # rooms[self._location].inventory.add_item(self)
 
-    # I don't mind people reading the location, but I want to discourage them from
-    # setting it. They should use the above method.
-    def get_location(self) -> str:
-        return self._location

@@ -32,6 +32,13 @@ from lib.models.game_state import GameState
 game = GameState(MudServer())
 commands = Commands(game)
 
+npcs = []
+for room_id, room in rooms.items():
+    npcs.extend(room.npcs)
+
+for npc in npcs:
+    game.players[npc.uuid] = npc
+
 # main game loop. We loop forever (i.e. until the program is terminated)
 while True:
 
@@ -68,8 +75,8 @@ while True:
     
             game.broadcast(f"{player.name} entered the game.")
 
-            player.message(f"Welcome to the game, {player.name}.")
-            player.message("Type 'help' for a list of commands. Have fun!")
+            player.tell(f"Welcome to the game, {player.name}.")
+            player.tell("Type 'help' for a list of commands. Have fun!")
             player.move(DEFAULT_START_LOCATION)
 
             continue

@@ -1,9 +1,9 @@
-from lib.models.creature import Creature
+from lib.models.npc import NPC
 from lib.models.enums import Alignment, Ability, Skill
 
 
 def create_creature_fixture():
-    return Creature(
+    return NPC(
         name='Fado',
         description='Fado stands before you.',
         character_class=None,
